@@ -19,6 +19,7 @@ This project utilized
 ### Data
 1. irib_doc_links.csv: Links to all 9876 documents in corpus
 2. sample.csv: Dataframe using the first 50 documents in corpus
+3. clean_sample.csv: Cleaned version of sample.csv
 ### Results
 1. tr_sample.csv: Translated version of sample dataframe
 ## More Information
