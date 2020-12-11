@@ -1,0 +1,101 @@
+---
+title: "03_translate.R"
+author: "Ava Sharifi"
+date: "12/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest) 
+library(stringr)
+library(purrr)
+library(googleLanguageR)
+library(utf8)
+```
+
+Clean
+```{r}
+# read csv
+sample <- read.csv('/Users/avasharifi/Desktop/Comp Methods/sample.csv') 
+
+#some texts have video players
+sample[1,5]
+
+#remove everything after the var player. This works for one article
+clean_text <- str_split(sample$text, "var player")[[1]]
+clean_text[1]
+
+#make a function to remove the video stuff
+get_text <- function(rec){
+      after_vid <- str_split(rec, "var player")[[1]]
+      before_vid <- head(after_vid, 1)
+      return(before_vid)
+    }
+
+#create new df with cleaned text
+ clean_sample <- sample%>%
+    mutate(text = map_chr(text, get_text))
+
+```
+
+Each article actually has a primary and secondary section, which I want to tease out.
+```{r}
+clean_sample <- separate(data = clean_sample, 
+                         col = section, 
+                         into = c("primary section", "secondary section"), 
+                         #split on \\n\\n which I created when I scraped the data
+                         sep = "\\n\\n")
+```
+
+Translate
+```{r, message = F}
+require(googleLanguageR)
+#register and download an authentication key from Google
+gl_auth("/Users/avasharifi/Downloads/comp-methods-9c5aa9da4c51.json") 
+
+# translate
+tr_sample <- clean_sample%>%
+  #for some reason, googleLanguageR will not create only the columns I want
+  summarise(date,
+            fa.title = title, 
+            en.title = gl_translate(clean_sample$title, target = 'en', ), 
+            fa.subtitle = subtitle, 
+            en.subtitle = gl_translate(clean_sample$subtitle, target = 'en', ), 
+            fa.text = text, 
+            en.text = gl_translate(clean_sample$text, target = 'en',))
+
+# write
+write.csv(tr_sample, "tr_sample.csv", row.names = F)
+
+#even when I enforce UTF-8 it comes out weird...
+write.csv(tr_sample, "test.csv", row.names=FALSE, fileEncoding = 'UTF-8')
+```
+
+For some reason, the gl_translate operation adds many additional column names that aren't effectively changed by a summarise, mutate, or select function. However, if you print the column names, you will only see the 7 that I identified within summarise. 
+
+GoogleLanguageR also really messes with the csv printing, so the current code outputs a csv that is nearly impossible to read. I suspect it's an encoding issue but encoding as UTF-8 doesn't fix it.
+
+Creating a word cloud
+```{r}
+#for some reason, the googleTranslateR function gives three columns for every 
+# one column I want, so I'm subsetting just the first column
+text <- tr_sample$en.text[1]
+docs <- Corpus(VectorSource(text))
+
+dtm <- DocumentTermMatrix(docs,
+           control = list(stopwords = TRUE,
+                          tolower = TRUE,
+                          removeNumbers = TRUE,
+                          removePunctuation = TRUE,
+                          stemming=TRUE))
+
+freq <- colSums(as.matrix(dtm))
+freq[1:5]
+length(freq)
+sorted <- sort(freq, decreasing = T)
+
+set.seed(123)
+wordcloud(names(sorted), sorted, max.words=100, colors=brewer.pal(6,"Dark2"))
+```
