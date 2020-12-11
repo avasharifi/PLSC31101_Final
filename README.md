@@ -22,5 +22,6 @@ This project utilized
 3. clean_sample.csv: Cleaned version of sample.csv
 ### Results
 1. tr_sample.csv: Translated version of sample dataframe
+2. cloud.png: Word cloud based on English translation of sample data
 ## More Information
 
