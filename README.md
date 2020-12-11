@@ -18,6 +18,8 @@ This project utilized
 03_translate.R: Translates content from Persian to English
 ### Data
 1. irib_doc_links.csv: Links to all 9876 documents in corpus
-2. sample.csv: 
+2. sample.csv: Dataframe using the first 50 documents in corpus
 ### Results
+1. tr_sample.csv: Translated version of sample dataframe
 ## More Information
+
