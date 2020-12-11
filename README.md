@@ -1,5 +1,5 @@
 # PLSC31101_Final
-Final project for Computational Methods for Social Science
+Final project for Computational Tools for Social Science
 ## Short Description
 This project analyzes news articles from the Islamic Republic of Iran Broadcasting news articles which mention the United States. My intention was to scrape all articles from 1/1/2020 to 6/30/2020 from IRIB news which mention the United States. I first scraped 148 pages of search results with 50 articles per page. The corpus was made up of 9876 documents. I then parsed the text into title, subtitle, date, and text. I then translated the content, except for the date, from Persian to English.
 
