@@ -11,7 +11,7 @@ This project utilized
 ## Files
 1. Narrative.Rmd: Provides a narrative of the project, main challenges, solutions, and results.
 2. Narrative.pdf: A knitted pdf of Narrative.Rmd.
-3. Slides.pptx: My lightening talk slides
+3. Sharifi_Presentation.pptx: My lightening talk slides
 ### Code
 01_collect-links.R: Collects document links from all IRIB news articles and exports data to the file irib_doc_links.csv
 02_scrape-docs.R: Scrapes relevant information from all news articles and exports data to the file sample.csv 
