@@ -30,7 +30,7 @@ The articles within IRIB's website are sometimes formatted strangely. The CSS Se
 There were two further issues with scraping articles. First, some articles did not have subtitles, which meant that my function could not be run through map_dfr. To solve this, I added a line of code which produces an "NA" coding when subtitle is not present, instead of just breaking the map_dfr. Second, the CSS path for section picks up two different sections, a main one and a secondary one. This also broke the map_dfr function so I added a line of code to collapse the two sections into one, separated by `\n\n`
 
 ## Cleaning / pre-processing data
-I attempted to clean the data before translating it. Some articles have videos embedded in them, so I created a function to remove the video player from article text. This may pose problems if there is article text after the video; however, I did not see that in any of the articles. 
+I attempted to clean the data before translating it. Some articles have videos embedded in them, so I created a function to remove the video player from article text. However, my function isn't ideal because some articles contain text following the video. My current function throws away all text following the video. I think this could be solved using str_remove or str_replace and identifying the particular pattern related to the video player. I wasn't able to do this in time to submit the project, though I attempted it multiple times.
 
 I also cleaned the data by separating the article section into primary and secondary section. Because the CSS selector is unable to select only the primary section, I used the CSS path to select both and later separated the two sections within my dataframe. 
 
