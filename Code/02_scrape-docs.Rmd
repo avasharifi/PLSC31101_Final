@@ -1,0 +1,65 @@
+---
+title: "02_scrape-docs.R"
+author: "Ava Sharifi"
+date: "12/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest) 
+library(stringr)
+library(purrr)
+library(googleLanguageR)
+library(utf8)
+```
+
+Create a function to scrape section, date, title, subtitle, and text from each article.
+```{r}
+#For IRIB
+scrape_doc <- function(URL){
+  
+  doc <- read_html(URLencode(URL))
+ 
+  #section returns two lists
+  section <- html_nodes(doc, ".news_path a") %>% 
+   html_text() 
+  
+  #use this to just get one list for section, otherwise can't map_dfr
+  section <- str_c(section, collapse = "\n\n") 
+  
+  #Persian date 
+  date <- html_nodes(doc, "div.news_nav.news_pdate_c.col-sm-16.col-xs-25") %>%
+    html_text()  %>%
+    as.character() %>%
+    #remove the words 'date of publication'
+    str_remove("تاریخ انتشار:")
+  
+  title <- html_nodes(doc, ".title_news") %>%
+    html_text()
+  
+  #get subtitle
+  r.subtitle <- html_nodes(doc, "p.subtitle")%>%
+    html_text()
+  
+  #puts in an NA for articles that don't have a subtitle. This way, map_dfr will still run
+  subtitle <- ifelse(length(r.subtitle)==0, NA, r.subtitle) 
+  
+  text <- html_nodes(doc, ".body") %>%
+    html_text()
+   
+  #return desired info as a list
+  all_info <- list(date = date, section = section, title = title, subtitle = subtitle, text = text)
+    
+  return(all_info)
+}
+
+#Using the function on a sample of 50 articles
+try <- map_dfr(all_links1[1:50], scrape_doc)
+
+#write csv
+write.csv(try, "/Users/avasharifi/Desktop/Comp Methods/sample.csv", row.names = FALSE)
+```
+
+For some reason, the `try` dataframe looks right in R but the csv is extremely messy and unreadable. It's completely functional when you read it into R, though.

@@ -1,0 +1,73 @@
+---
+title: "01_collect-links.R"
+author: "Ava Sharifi"
+date: "12/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest) 
+library(stringr)
+library(purrr)
+library(googleLanguageR)
+library(utf8)
+```
+
+I'm scraping 1/1/2020 to 6/30/2020. IRIB's search function is based on the Persian calendar. In the Persian calendar, those dates are (mdy): 10/11/1398 to 4/10/1399. 
+```{r}
+#creating a a character vector with all pages of the search result
+irib_base <- "https://www.iribnews.ir/fa/search/"
+irib_links <- irib_base%>%
+  #there are just over 197 pages of search results
+  paste(1:198, sep = "")%>%
+  paste("-1/-1/50/آمریکا?from=1398/10/11&to=1399/04/10", sep = "/")
+```
+
+Function to pull articles from within one page of search results
+```{r}
+scrape_search <- function(link) {
+  #need to encode URL because of Persian characters
+  home_doc <- read_html(URLencode(link))
+  URL <- home_doc%>%
+    #used selector gadget to find the path for each article
+    html_nodes(".tag_title")%>%
+    html_attr("href")
+  URL <- paste("https://www.iribnews.ir", URL, sep = "")
+  return(URL)
+}
+
+#trying a small subset. first ten pages of search results
+try <- irib_links[1:10]
+test <- map(try, i_scrape)%>%
+  flatten()
+```
+
+It works! Now I need to do it for all 198 pages of search results
+```{r}
+#I split it up like this because doing a single map function map(irib_links, 
+#i_scrape) takes SO long
+irib_links1 <- irib_links[c(1:50)]
+irib_links2 <- irib_links[c(51:100)]
+irib_links3 <- irib_links[c(101:150)]
+irib_links4 <- irib_links[c(151:198)]
+
+all_links1 <-  map(irib_links1, i_scrape)%>%
+  flatten() #this took 2 minutes
+all_links2 <- map(irib_links2, i_scrape)%>%
+  flatten() #this took 4.5 minutes
+all_links3 <- map(irib_links3, i_scrape)%>%
+  flatten() #this took 5 minutes
+all_links4 <- map(irib_links4, i_scrape)%>%
+  flatten() #2.5 min
+
+#Combining all lists as a df
+all_irib <- c(all_links1, all_links2, all_links3, all_links4)%>%
+  flatten()%>%
+  #turning it into a df
+  map_df(as_tibble) 
+
+#writing it to a csv so I dont need to redo this every time I want the links
+write.csv(all_irib, file = "irib_doc_links.csv", row.names = FALSE)
+```
